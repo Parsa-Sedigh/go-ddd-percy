@@ -1,8 +1,7 @@
-package services
+package order
 
 import (
 	"context"
-	"github.com/Parsa-Sedigh/go-ddd-percy/aggregate"
 	"github.com/Parsa-Sedigh/go-ddd-percy/domain/customer"
 	"github.com/Parsa-Sedigh/go-ddd-percy/domain/customer/memory"
 	"github.com/Parsa-Sedigh/go-ddd-percy/domain/customer/mongo"
@@ -16,8 +15,8 @@ import (
 type OrderConfiguration func(os *OrderService) error
 
 type OrderService struct {
-	customers customer.CustomerRepository
-	products  product.ProductRepository
+	customers customer.Repository
+	products  product.Repository
 
 	//billing billing.Service
 }
@@ -40,7 +39,7 @@ func NewOrderService(cfgs ...OrderConfiguration) (*OrderService, error) {
 }
 
 // WithCustomerRepository applies a customer repository to the order service
-func WithCustomerRepository(cr customer.CustomerRepository) OrderConfiguration {
+func WithCustomerRepository(cr customer.Repository) OrderConfiguration {
 	// return a function that matches OrderConfiguration alias(we need to return a function so that we can chain these)
 	return func(os *OrderService) error {
 		os.customers = cr
@@ -68,7 +67,7 @@ func WithMongoCustomerRepository(ctx context.Context, connStr string) OrderConfi
 	}
 }
 
-func WithMemoryProductRepository(products []aggregate.Product) OrderConfiguration {
+func WithMemoryProductRepository(products []product.Product) OrderConfiguration {
 	return func(os *OrderService) error {
 		pr := prodmem.New()
 
@@ -94,7 +93,7 @@ func (o *OrderService) CreateOrder(customerID uuid.UUID, productIDs []uuid.UUID)
 	/* Get each product, so we need a product repository and we would also need a WithMemoryProductRepository which sets the product repo
 	for the order service. In order to have a product repo, we need a product aggregate. */
 
-	var products []aggregate.Product
+	var products []product.Product
 	var total float64
 
 	for _, id := range productIDs {
@@ -110,4 +109,19 @@ func (o *OrderService) CreateOrder(customerID uuid.UUID, productIDs []uuid.UUID)
 	log.Printf("Customer: %s has ordered %d products", c.GetID(), len(products))
 
 	return total, nil
+}
+
+// AddCustomer exposes the adding a customer functionality instead of exporting the customers field of OrderService.
+// In other words, this method wraps the functionality of customers repo.
+func (o *OrderService) AddCustomer(name string) (uuid.UUID, error) {
+	c, err := customer.NewCustomer(name)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	if err = o.customers.Add(c); err != nil {
+		return uuid.Nil, err
+	}
+
+	return c.GetID(), nil
 }

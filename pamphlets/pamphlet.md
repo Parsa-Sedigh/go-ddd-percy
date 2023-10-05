@@ -139,5 +139,37 @@ We would get the same result no matter which repo we use.
 
 To structure a domain driven project, watch the next video.
 
+## How To Structure Domain Driven Design (DDD) In Go
+https://www.youtube.com/watch?v=jJHhXaWwM7Y&t=154s&ab_channel=ProgrammingPercy
 
-## 
+### intro
+We will be moving the aggregates into their own domain packages.
+
+So we have learned what an aggregate is and what rules apply to them, so we don't necessarily have to name the package `aggregate`.
+So place aggregates into their respective `domain` package. So place customer files in aggregate package in domain>customer folder.
+Do the same thing for `product` aggregate.
+
+Now remove the aggregate folder.
+
+### Start extracting aggregate
+We still have the entity and valueobject packages. It's not wrong having them in a separate packages, so that we don't cyclic imports.
+But the entities and value objects are related to the tavern domain and the tavern domain is actually the package that we're building(the root package).
+
+Note: We could have a tavern domain inside the domain package(folder).
+
+Now delete the entity and valueobject folders. Rename the moved files package to `tavern` which is the core domain(we have a `tavern` package at root
+level). Our root package is named tavern. So we need to change the module name in go.mod to `tavern`.
+
+### splitting services
+Rename `CustomerRepository` and `ProductRepository` to `Repository`. Because it's name starts with the package name, so it's unnecessary.
+This is only makes sense if we put the repository in the domain.
+
+### making services expose needed functionality
+
+### removing duplicate naming convention
+
+### making the tavern runnable
+
+### testing with a mongodb
+
+### ending

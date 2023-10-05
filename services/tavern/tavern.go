@@ -1,6 +1,7 @@
-package services
+package tavern
 
 import (
+	"github.com/Parsa-Sedigh/go-ddd-percy/services/order"
 	"github.com/google/uuid"
 	"log"
 )
@@ -10,7 +11,7 @@ type TavernConfiguration func(t *Tavern) error
 
 // Tavern holds the order service because we want to take orders inside of our tavern
 type Tavern struct {
-	OrderService *OrderService
+	OrderService *order.OrderService
 
 	// We need BillingService to accept payments
 	// TODO: Create this service
@@ -30,7 +31,7 @@ func NewTavern(cfgs ...TavernConfiguration) (*Tavern, error) {
 }
 
 // WithOrderService accepts a fully configured order service
-func WithOrderService(os *OrderService) TavernConfiguration {
+func WithOrderService(os *order.OrderService) TavernConfiguration {
 	return func(t *Tavern) error {
 		t.OrderService = os
 

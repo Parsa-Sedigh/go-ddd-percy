@@ -1,4 +1,4 @@
-module github.com/Parsa-Sedigh/go-ddd-percy
+module github.com/Parsa-Sedigh/go-ddd-percy // could name this: github.com/Parsa-Sedigh/tavern
 
 go 1.20
 

@@ -2,7 +2,6 @@ package memory
 
 import (
 	"errors"
-	"github.com/Parsa-Sedigh/go-ddd-percy/aggregate"
 	"github.com/Parsa-Sedigh/go-ddd-percy/domain/customer"
 	"github.com/google/uuid"
 	"testing"
@@ -16,7 +15,7 @@ func TestMemory_GetCustom(t *testing.T) {
 	}
 
 	// create a new customer
-	cust, err := aggregate.NewCustomer("parsa")
+	cust, err := customer.NewCustomer("parsa")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +24,7 @@ func TestMemory_GetCustom(t *testing.T) {
 
 	// we're not gonna use the factory function here
 	repo := MemoryCustomerRepository{
-		customers: map[uuid.UUID]aggregate.Customer{
+		customers: map[uuid.UUID]customer.Customer{
 			id: cust,
 		},
 	}

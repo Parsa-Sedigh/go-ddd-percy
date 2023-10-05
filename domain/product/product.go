@@ -1,8 +1,8 @@
-package aggregate
+package product
 
 import (
 	"errors"
-	"github.com/Parsa-Sedigh/go-ddd-percy/entity"
+	tavern "github.com/Parsa-Sedigh/go-ddd-percy"
 	"github.com/google/uuid"
 )
 
@@ -12,7 +12,7 @@ var (
 
 type Product struct {
 	// root entity
-	item     *entity.Item
+	item     *tavern.Item
 	price    float64
 	quantity int
 }
@@ -24,7 +24,7 @@ func NewProduct(name, description string, price float64) (Product, error) {
 	}
 
 	return Product{
-		item: &entity.Item{
+		item: &tavern.Item{
 			ID:          uuid.New(),
 			Name:        name,
 			Description: description,
@@ -40,7 +40,7 @@ func (p Product) GetID() uuid.UUID {
 }
 
 // GetItem extracts the entity(item) from the product aggregate
-func (p Product) GetItem() *entity.Item {
+func (p Product) GetItem() *tavern.Item {
 	return p.item
 }
 

@@ -1,8 +1,8 @@
-package aggregate_test
+package customer_test
 
 import (
 	"errors"
-	"github.com/Parsa-Sedigh/go-ddd-percy/aggregate"
+	"github.com/Parsa-Sedigh/go-ddd-percy/domain/customer"
 	"testing"
 )
 
@@ -19,7 +19,7 @@ func TestCustomer_NewCustomer(t *testing.T) {
 		{
 			test:        "Empty name validation",
 			name:        "",
-			expectedErr: aggregate.ErrInvalidPerson,
+			expectedErr: customer.ErrInvalidPerson,
 		},
 		// always test the happy path
 		{
@@ -33,7 +33,7 @@ func TestCustomer_NewCustomer(t *testing.T) {
 		t.Run(tc.test, func(t *testing.T) {
 			// execute a unit test for each test case
 
-			_, err := aggregate.NewCustomer(tc.name)
+			_, err := customer.NewCustomer(tc.name)
 			if !errors.Is(err, tc.expectedErr) {
 				t.Errorf("expected error %v, got %v", tc.expectedErr, err)
 			}
