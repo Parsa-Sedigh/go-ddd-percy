@@ -1,3 +1,6 @@
+https://www.youtube.com/watch?v=6zuJXIbOyhs&t=2676s&ab_channel=ProgrammingPercy
+
+## How To Implement Domain-Driven Design (DDD) in Go
 **Domain modeling session:** It's a session where the subject matter expert(SME) explains to the engineers about the domain.
 
 **ubiquitous language**: It's about talking the same language between the SMEs and engineers. A unified language which everyone on the
@@ -40,6 +43,10 @@ We made all the fields of customer aggregate to unexported because aggregates sh
 Also we're not using any json tags or anything like that in aggregates, because it's not up to the aggregate to decide how the data is
 supposed to be formatted.
 
+The data of an aggregate is not accessible from outside of the aggregate. Nothing outside of the aggregate can modify the data of aggregate,
+the changes are done by exposing functions like(`SetName`) that allows changes. So if we should be able to modify the name, we expose a function
+which allows you to do that(like SetName func). You don't directly modify an aggregate.
+
 Also we set all the entity fields of aggregate to pointer because we can change their state and therefore it will be reflected across the places
 it's been used whenever sth in that pointer changes. So if we have a `Person` in multiple places, that change should reflect everywhere.
 Note we didn't make transaction field (value object fields) a pointer in the aggregate because it can not be changed, so there's no reason to make
@@ -58,3 +65,79 @@ When we have business logic like NewCustomer() func, we should always test it.
 By using `%v` verb, even if the value that will be substituted with %v, is nil, we won't get a nil pointer exception.
 
 ### Repository pattern
+Aggregates(like customer) don't have any json, bson, csv ... tags and that's because aggregates are stored by repositories.
+So an aggregate is a combination of entities and value objects, but when we store and manage them, we use a repository.
+
+The repository pattern relies on hiding the implementation details behind an interface and with this pattern, we can have for example
+whenever we do unit tests, we can have in-memory repository for storing customers but we can also have mysql repository. So if the db changes,
+we can build a new repository for mongodb and satisfy the same interface that the previous db was satisfying and then we can swap them.
+So we just refactor the repository and it will propagate to all other domains.
+
+Create customer folder that holds our repository for customers, in domain folder.
+
+It's not good to have the word `repository` in `CustomerRepository` interface, but it works.
+
+By defining CustomerRepository, it doesn't matter if the customer is fetched from mongodb, mysql, in memory, ... , as long as we call the `Get` method,
+it's fine.
+
+Now create `memory` folder in `domain/customer` which will hold our in-memory solution for the `CustomerRepository` which we can use in unit test.
+
+**A repository is used to manage aggregates.** One repository, only handles one aggregate. We want loose coupling. But in real world,
+we can't rely on one repository, so we have to start coupling somewhere. For example if we have an order, we need to get the customer, make a billing
+and ... (coupling) and that brings us to the next point of DDD and it's services.
+
+Note: If we have an aggregate called product, we need a repo to manage them.
+
+### Services & configuration patterns & more repositories
+A service will tie together all the loosely coupled repositories into a business logic that fulfills the needs of the domain.
+So in our tavern, we might need an order service. An order service is responsible for making the repositories work together to perform an order.
+So getting the customer using the customer repo, getting the product with product repo(for instance) and then making the billing using the billing
+service.
+
+So the service takes these loosely coupled pieces and couples them together.
+
+Create services folder and order.go .
+
+Whenever you have services, the factories tend to get larger and more complex. Because you accept multiple repositories as inputs.
+
+One trick for fixing this problem, is sorta a service configuration generator pattern and it allows us to create flexible, modular services
+where you can replace the repositories easily.
+
+The `OrderService` needs `CustomerRepository` because whenever somebody makes an order, they are a customer, so we need to handle the
+customer aggregate, so we need the `CustomerRepository` in the service.
+
+The reason we would use this pattern is for example if in the future change from in-memory to MySQL and we know the order service itself is used
+in a lot of places and we don't want to change everything because of this, you would simply build repository for mysql or mongodb and the
+you replace the `WithMemoryCustomerRepository` with `WithMySQLCustomerRepository` or ... and everything would continue working as long as your
+repository is working as expected.
+
+Another example is if you have a mail service but you don't want to send mails when in unit tests. For this, you replace the repository for the emails.
+
+Let's add some functions for business logic in order service.
+
+The helper functions for exposing data of aggregate, depend on what you actually need to expose.
+
+Note: A service can hold multiple repositories. But a service is also allowed to hold other services. So the order service could hold
+the billing service for example. So a service holds repositories and potentially sub-services, that builds together the business flow.
+
+### Tavern service & sub-services
+Create a tavern and the tavern is a service.
+
+Tavern service will hold sub services.
+
+One common approach in repositories(like mongo repo) is to have some functions for converting the related aggregate type into it's repo type(customer
+aggregate type into customer mongo repo type). Why? Because we're not working with aggregate types directly in the repo, we need to convert
+the aggregate type to it's respected repo type. So we have a function like `NewFromCustomer`. So now we can easily go from an aggregate type
+to the related internal repo struct.
+
+We also have the other way around conversions, like: `ToAggregate`.
+
+These are a bit overhead.
+
+So we can switch repositories in a service, like replacing the postgres repo with mongo repo. So the service won't have to care about the repositories.
+We would get the same result no matter which repo we use.
+
+To structure a domain driven project, watch the next video.
+
+
+## 
